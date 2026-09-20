@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""Local model and effort selector for Jev Router."""
+from __future__ import annotations
+import json, os, subprocess, threading, time, webbrowser
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+P = Path.home() / ".codex" / "jev-router-settings.json"
+M = (("gpt-6-astra", "GPT-6 Astra"), ("gpt-5.6-sol", "GPT-5.6 Sol"), ("gpt-5.6-terra", "GPT-5.6 Terra"), ("gpt-5.6-luna", "GPT-5.6 Luna"))
+E = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "XHigh"), ("max", "Max"))
+D = {"models": [x[0] for x in M], "efforts": [x[0] for x in E]}
+def read():
+ try: v=json.loads(P.read_text()); return {"models":[x[0] for x in M if x[0] in v.get("models",[]) ] or D["models"],"efforts":[x[0] for x in E if x[0] in v.get("efforts",[]) ] or D["efforts"]}
+ except (OSError,json.JSONDecodeError): return D.copy()
+def save(v):
+ if not isinstance(v,dict): raise ValueError("Expected settings")
+ r={"models":[x[0] for x in M if x[0] in v.get("models",[])],"efforts":[x[0] for x in E if x[0] in v.get("efforts",[])]}
+ if not r["models"] or not r["efforts"]: raise ValueError("Select at least one model and effort")
+ P.parent.mkdir(parents=True,exist_ok=True); t=P.with_suffix(".tmp"); t.write_text(json.dumps(r,indent=2)+"\n"); os.chmod(t,0o600); os.replace(t,P); return r
+def restart():
+ subprocess.run(["/usr/bin/osascript","-e",'tell application "ChatGPT" to quit'],check=False); time.sleep(2); subprocess.Popen(["/usr/bin/open","-a","ChatGPT"])
+PAGE='''<!doctype html><title>Jev Router</title><style>body{background:#101216;color:#f4f4f5;font:15px -apple-system;padding:32px;max-width:700px;margin:auto}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:#191c22;border-radius:12px;padding:18px}label{display:block;padding:8px}button{padding:10px 15px;margin:20px 8px 0 0;border:0;border-radius:8px;background:#7c8cff;color:white}.secondary{background:#2a2f3a}</style><h1>Jev Router</h1><p>Select the models and reasoning efforts Jev may use.</p><div class=grid><div class=card><b>Models</b><div id=m></div></div><div class=card><b>Reasoning efforts</b><div id=e></div></div></div><button onclick=s()>Save changes</button><button class=secondary onclick=r()>Restart Codex</button> <span id=x></span><script>const M='''+json.dumps(M)+''',E='''+json.dumps(E)+''';function d(id,a,v){document.querySelector('#'+id).innerHTML=a.map(x=>`<label><input type=checkbox value=${x[0]} ${v.includes(x[0])?'checked':''}> ${x[1]}</label>`).join('')}function q(id){return [...document.querySelectorAll('#'+id+' input:checked')].map(x=>x.value)}async function l(){let v=await(await fetch('/api/settings')).json();d('m',M,v.models);d('e',E,v.efforts)}async function s(){let z=await fetch('/api/settings',{method:'POST',body:JSON.stringify({models:q('m'),efforts:q('e')})});document.querySelector('#x').textContent=z.ok?'Saved':'Select at least one of each'}async function r(){await fetch('/api/restart',{method:'POST'});document.querySelector('#x').textContent='Restarting…'}l()</script>'''
+class H(BaseHTTPRequestHandler):
+ def send(self,s,b,typ="application/json"):
+  b=b.encode() if isinstance(b,str) else json.dumps(b).encode(); self.send_response(s);self.send_header("Content-Type",typ);self.send_header("Content-Length",len(b));self.end_headers();self.wfile.write(b)
+ def do_GET(self): self.send(200,PAGE,"text/html") if self.path=="/" else self.send(200,read()) if self.path=="/api/settings" else self.send(404,{})
+ def do_POST(self):
+  try:
+   if self.path=="/api/settings": self.send(200,save(json.loads(self.rfile.read(int(self.headers.get("Content-Length",0))))))
+   elif self.path=="/api/restart": threading.Thread(target=restart,daemon=True).start();self.send(202,{})
+   else:self.send(404,{})
+  except (ValueError,json.JSONDecodeError) as e:self.send(400,{"error":str(e)})
+ def log_message(self,*_):pass
+if __name__=="__main__":
+ s=ThreadingHTTPServer(("127.0.0.1",48878),H);webbrowser.open("http://127.0.0.1:48878");s.serve_forever()

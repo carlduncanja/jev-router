@@ -1,0 +1,18 @@
+{
+  "name": "jev-router-saas",
+  "version": "0.1.0",
+  "description": "Route Codex turns to the right model and reasoning effort through a hosted Jev service.",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Jev Router SaaS",
+    "shortDescription": "Automatic Codex model and effort routing.",
+    "longDescription": "Connect Codex Desktop to a hosted Jev router that selects GPT-6 Astra, GPT-5.6 Sol, Terra, or Luna and Low, Medium, or High reasoning for each turn.",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Help me configure or troubleshoot Jev Router SaaS."
+  }
+}

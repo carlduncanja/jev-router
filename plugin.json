@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "jev-router-saas",
+  "version": "0.1.0",
+  "description": "Automatic Codex model and reasoning-effort routing through a hosted Jev service.",
+  "author": {
+    "name": "Jev Router"
+  },
+  "keywords": ["codex", "routing", "cost-control", "jev"]
+}

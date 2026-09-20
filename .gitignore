@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+jev-router-settings.json
+jev-router-saas.json
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+*.log
+*.zip
+*.sha256
+.DS_Store
