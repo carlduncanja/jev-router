@@ -1,6 +1,6 @@
-# Jev Router SaaS
+# Jev Router
 
-Jev Router SaaS keeps one TypeSafe API key on your server and gives every customer a separate, revocable client token. The Codex Desktop client sends at most 6,000 redacted prompt characters to your service. Your service asks Jev to select both:
+Jev Router keeps one TypeSafe API key on your server and gives every customer a separate, revocable client token. The Codex Desktop client sends at most 6,000 redacted prompt characters to your service. Your service asks Jev to select both:
 
 - Model: GPT-6 Astra, GPT-5.6 Sol, GPT-5.6 Terra, or GPT-5.6 Luna
 - Reasoning effort: Low, Medium, High, XHigh, or Max (subject to the selected model's support)
@@ -8,6 +8,8 @@ Jev Router SaaS keeps one TypeSafe API key on your server and gives every custom
 The local router writes those choices into both `turn/start` and the active collaboration-mode settings. It never distributes the TypeSafe key.
 
 ## Architecture
+
+Open source under the [MIT License](LICENSE). This license covers the router code; third-party services retain their own terms.
 
 ```text
 Codex Desktop
